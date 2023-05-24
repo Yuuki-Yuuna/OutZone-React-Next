@@ -66,6 +66,7 @@ const MyFile: React.FC = () => {
   ]
   const [testData] = useState(tempData)
 
+  const [editNewFolder, setEditNewFolder] = useState(false)
   const [editFile, setEditFile] = useState<FileInformation | null>(null) //正在编辑的文件
   const [selectedFiles, setSelectedFiles] = useState<FileInformation[]>([]) //被选中的所有文件
   const contextMenu = useFileContextMenu(selectedFiles)
@@ -73,7 +74,7 @@ const MyFile: React.FC = () => {
   return (
     <MyFileContext.Provider value={{ selectedFiles, pathId, userInfo }}>
       <div className={styles.container}>
-        <FileOption />
+        <FileOption {...{ setEditFile, setEditNewFolder }} />
         <div className={styles.fileManage}>
           <div className={styles.myFile}>
             <FilePath />
@@ -84,6 +85,8 @@ const MyFile: React.FC = () => {
               )}
               editFile={editFile}
               closeEdit={() => setEditFile(null)}
+              editNewFolder={editNewFolder}
+              closeEditNewFolder={() => setEditNewFolder(false)}
               contextMenu={contextMenu}
               dataSource={testData}
               loading={loading}

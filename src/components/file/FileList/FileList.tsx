@@ -3,6 +3,7 @@ import { useSelections, useUpdateEffect } from 'ahooks'
 import { createStyles } from 'antd-style'
 import { Row, Col, Checkbox, RowProps, Dropdown, MenuProps } from 'antd'
 import FileListItem from './FileListItem'
+import NewFolderItem from './NewFolderItem'
 import { FileInformation } from '~/type'
 
 export interface FileListBaseProps {
@@ -17,6 +18,8 @@ export interface FileListProps extends FileListBaseProps {
   justify?: RowProps['justify']
   onSelectedChange?: (selected: FileInformation[]) => void
   contextMenu?: MenuProps['items'] //右键菜单
+  editNewFolder?: boolean //是否正在新建文件夹
+  closeEditNewFolder?: () => void
   loading?: boolean
 }
 
@@ -37,6 +40,8 @@ const FileList: React.FC<FileListProps> = (props) => {
     editFile,
     closeEdit,
     contextMenu,
+    editNewFolder,
+    closeEditNewFolder,
     onSelectedChange
   } = props
 
@@ -91,6 +96,12 @@ const FileList: React.FC<FileListProps> = (props) => {
               }px)`
             }}
           >
+            {editNewFolder && (
+              <NewFolderItem
+                editNewFolder={editNewFolder}
+                closeEditNewFolder={closeEditNewFolder}
+              />
+            )}
             <Dropdown
               disabled={!contextMenu}
               menu={{ items: contextMenu }}
