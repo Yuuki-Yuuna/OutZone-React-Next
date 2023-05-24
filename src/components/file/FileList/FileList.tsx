@@ -1,7 +1,15 @@
 import React, { useEffect, useRef } from 'react'
 import { useSelections, useUpdateEffect } from 'ahooks'
 import { createStyles } from 'antd-style'
-import { Row, Col, Checkbox, RowProps, Dropdown, MenuProps } from 'antd'
+import {
+  Row,
+  Col,
+  Checkbox,
+  RowProps,
+  Dropdown,
+  MenuProps,
+  Skeleton
+} from 'antd'
 import FileListItem from './FileListItem'
 import NewFolderItem from './NewFolderItem'
 import { FileInformation } from '~/type'
@@ -42,7 +50,8 @@ const FileList: React.FC<FileListProps> = (props) => {
     contextMenu,
     editNewFolder,
     closeEditNewFolder,
-    onSelectedChange
+    onSelectedChange,
+    loading
   } = props
 
   const listRef = useRef<HTMLDivElement>(null)
@@ -74,16 +83,30 @@ const FileList: React.FC<FileListProps> = (props) => {
             wrap={false}
           >
             <Col span={1} style={{ textAlign: 'center' }}>
-              <Checkbox
-                checked={allSelected}
-                indeterminate={partiallySelected}
-                onClick={toggleAll}
-              />
+              {loading ? (
+                <Skeleton.Button className={styles.sekeletonButton} active />
+              ) : (
+                <Checkbox
+                  checked={allSelected}
+                  indeterminate={partiallySelected}
+                  onClick={toggleAll}
+                />
+              )}
             </Col>
-            <Col span={11}>文件名</Col>
+            <Col span={11}>
+              {loading ? (
+                <Skeleton.Input className={styles.sekeletonText} active />
+              ) : (
+                '文件名'
+              )}
+            </Col>
             {columns?.map((column) => (
               <Col span={column.span} key={column.dataIndex}>
-                {column.title}
+                {loading ? (
+                  <Skeleton.Input className={styles.sekeletonText} active />
+                ) : (
+                  column.title
+                )}
               </Col>
             ))}
           </Row>
@@ -96,7 +119,7 @@ const FileList: React.FC<FileListProps> = (props) => {
               }px)`
             }}
           >
-            {editNewFolder && (
+            {!loading && editNewFolder && (
               <NewFolderItem
                 editNewFolder={editNewFolder}
                 closeEditNewFolder={closeEditNewFolder}
@@ -121,6 +144,7 @@ const FileList: React.FC<FileListProps> = (props) => {
                     toggleSelected={() => toggle(item)}
                     unSelectAll={unSelectAll}
                     hasContextMenu={!!contextMenu}
+                    loading={loading}
                   />
                 ))}
               </div>
@@ -156,6 +180,27 @@ const useStyles = createStyles(({ token, css }) => {
 
       .anticon {
         margin-right: 6px;
+      }
+    `,
+    sekeletonButton: css`
+      display: flex !important;
+      justify-content: center;
+      align-items: center;
+
+      &.ant-skeleton.ant-skeleton-element .ant-skeleton-button {
+        width: 16px;
+        height: 16px;
+        min-width: unset;
+      }
+    `,
+    sekeletonText: css`
+      display: flex !important;
+      align-items: center;
+
+      &.ant-skeleton.ant-skeleton-element .ant-skeleton-input {
+        width: 40px;
+        height: 16px;
+        min-width: unset;
       }
     `
   }

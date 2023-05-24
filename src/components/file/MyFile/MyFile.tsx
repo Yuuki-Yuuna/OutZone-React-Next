@@ -9,6 +9,8 @@ import { useMyFileData } from './hooks/useMyFileData'
 import { useFileContextMenu } from './hooks/useFileContextMenu'
 import { UserInfo, FileInformation } from '~/type'
 import { computedFileSize } from '~/util'
+import { Spin } from 'antd'
+import { LoadingOutlined } from '@ant-design/icons'
 
 const MyFile: React.FC = () => {
   const { styles } = useStyles()
@@ -73,29 +75,36 @@ const MyFile: React.FC = () => {
 
   return (
     <MyFileContext.Provider value={{ selectedFiles, pathId, userInfo }}>
-      <div className={styles.container}>
-        <FileOption {...{ setEditFile, setEditNewFolder }} />
-        <div className={styles.fileManage}>
-          <div className={styles.myFile}>
-            <FilePath />
-            <FileList
-              columns={columns}
-              renderTool={(item) => (
-                <FileTool file={item} setEditFile={setEditFile} />
-              )}
-              editFile={editFile}
-              closeEdit={() => setEditFile(null)}
-              editNewFolder={editNewFolder}
-              closeEditNewFolder={() => setEditNewFolder(false)}
-              contextMenu={contextMenu}
-              dataSource={testData}
-              loading={loading}
-              onSelectedChange={(selected) => setSelectedFiles(selected)}
-            />
+      <Spin
+        wrapperClassName={styles.spin}
+        spinning={false}
+        indicator={<LoadingOutlined />}
+        size='large'
+      >
+        <div className={styles.container}>
+          <FileOption {...{ setEditFile, setEditNewFolder }} />
+          <div className={styles.fileManage}>
+            <div className={styles.myFile}>
+              <FilePath />
+              <FileList
+                columns={columns}
+                renderTool={(item) => (
+                  <FileTool file={item} setEditFile={setEditFile} />
+                )}
+                editFile={editFile}
+                closeEdit={() => setEditFile(null)}
+                editNewFolder={editNewFolder}
+                closeEditNewFolder={() => setEditNewFolder(false)}
+                contextMenu={contextMenu}
+                dataSource={testData}
+                loading={loading}
+                onSelectedChange={(selected) => setSelectedFiles(selected)}
+              />
+            </div>
+            <FilePreview />
           </div>
-          <FilePreview />
         </div>
-      </div>
+      </Spin>
     </MyFileContext.Provider>
   )
 }
@@ -124,6 +133,11 @@ const useStyles = createStyles(({ token, css }) => {
       flex: 1;
       min-width: 540px;
       height: 100%;
+    `,
+    spin: css`
+      & > div > .ant-spin {
+        max-height: 100%;
+      }
     `
   }
 })
