@@ -3,16 +3,11 @@ import { useHover } from 'ahooks'
 import { createStyles } from 'antd-style'
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons'
 import { Row, Button, Col, Checkbox, Image, Space, Input, InputRef } from 'antd'
-import { ColumnType } from './FileList'
+import { FileListBaseProps } from './FileList'
 import { ContentType, FileInformation } from '~/type'
 
-export interface FileListItemProps {
+export interface FileListItemProps extends FileListBaseProps {
   file: FileInformation
-  columns?: ColumnType[]
-  renderTool?: (
-    item: FileInformation,
-    setIsEdit: React.Dispatch<React.SetStateAction<boolean>>
-  ) => React.ReactNode
   isSelected: boolean
   toggleSelected: () => void
   unSelectAll: () => void
@@ -25,6 +20,8 @@ const FileListItem: React.FC<FileListItemProps> = (props) => {
     file,
     columns,
     renderTool,
+    editFile,
+    closeEdit,
     isSelected,
     toggleSelected,
     unSelectAll,
@@ -42,33 +39,36 @@ const FileListItem: React.FC<FileListItemProps> = (props) => {
     console.log('预览或进入文件')
   }
 
+  const selectTimeout = useRef<NodeJS.Timeout>()
+  const onClick = () => {
+    // 由于doubleClick，可以做防抖优化
+    if (selectTimeout.current) {
+      clearTimeout(selectTimeout.current)
+    }
+    selectTimeout.current = setTimeout(() => {
+      unSelectAll() //排他选择
+      toggleSelected()
+    }, 200)
+  }
+
+  const onCheckBoxClick = (event: React.MouseEvent) => {
+    event.stopPropagation()
+    clearTimeout(selectTimeout.current)
+    toggleSelected()
+  }
+
   const onContextMenu = () => {
     if (!hasContextMenu || isSelected) {
       // 选中也不做操作
       return
     }
     unSelectAll()
-    clearTimeout(selectTimer.current)
+    clearTimeout(selectTimeout.current)
     toggleSelected() //不用等待
   }
 
-  const selectTimer = useRef<NodeJS.Timer>()
-  const onClick = () => {
-    // 由于doubleClick，可以做防抖优化
-    if (selectTimer.current) {
-      clearTimeout(selectTimer.current)
-    }
-    selectTimer.current = setTimeout(toggleSelected, 200)
-  }
-
-  const onCheckBoxClick = (event: React.MouseEvent) => {
-    event.stopPropagation() //阻止冒泡
-    clearTimeout(selectTimer.current)
-    toggleSelected()
-  }
-
   const editRef = useRef<InputRef>(null)
-  const [isEdit, setIsEdit] = useState(false) //是否正在编辑
+  const isEdit = editFile === file
   const [editName, setEditName] = useState(filename) //最好设置初值
   useEffect(() => {
     if (isEdit) {
@@ -93,7 +93,7 @@ const FileListItem: React.FC<FileListItemProps> = (props) => {
   }
   const onEditDone = () => {
     // 其它逻辑
-    setIsEdit(false)
+    closeEdit?.()
   }
 
   return (
@@ -123,7 +123,6 @@ const FileListItem: React.FC<FileListItemProps> = (props) => {
               size='small'
               value={editName}
               onChange={onEditChange}
-              onBlur={() => setIsEdit(false)}
               maxLength={50}
             />
             <Button
@@ -136,7 +135,7 @@ const FileListItem: React.FC<FileListItemProps> = (props) => {
               size='small'
               type='primary'
               icon={<CloseOutlined />}
-              onClick={() => setIsEdit(false)}
+              onClick={() => closeEdit?.()}
             />
           </Space>
         ) : (
@@ -150,7 +149,7 @@ const FileListItem: React.FC<FileListItemProps> = (props) => {
             >
               {filename}
             </span>
-            {isHover && renderTool?.(file, setIsEdit)}
+            {isHover && renderTool?.(file)}
           </>
         )}
       </Col>

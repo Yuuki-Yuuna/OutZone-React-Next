@@ -15,12 +15,12 @@ import { FileInformation } from '~/type'
 
 export interface FileToolProps {
   file: FileInformation
-  setIsEdit: React.Dispatch<React.SetStateAction<boolean>>
+  setEditFile: React.Dispatch<React.SetStateAction<FileInformation | null>> //只允许一个文件正在编辑
 }
 
 const FileTool: React.FC<FileToolProps> = (props) => {
   const { styles } = useStyles()
-  const { file, setIsEdit } = props
+  const { file, setEditFile } = props
 
   const dropdownItems: MenuProps['items'] = [
     {
@@ -63,7 +63,7 @@ const FileTool: React.FC<FileToolProps> = (props) => {
       <EditOutlined
         className={styles.icon}
         title='重命名'
-        onClick={() => setIsEdit(true)}
+        onClick={() => setEditFile(file)}
       />
       <Dropdown
         menu={{ items: dropdownItems }}
@@ -84,6 +84,10 @@ const useStyles = createStyles(({ token, css }) => {
     container: css`
       position: absolute;
       right: 12px;
+
+      .anticon {
+        font-size: ${token.fontSizeLG}px;
+      }
     `,
     overlay: css`
       min-width: 100px !important;

@@ -5,14 +5,16 @@ import { Row, Col, Checkbox, RowProps, Dropdown, MenuProps } from 'antd'
 import FileListItem from './FileListItem'
 import { FileInformation } from '~/type'
 
-export interface FileListProps {
+export interface FileListBaseProps {
+  columns?: ColumnType[]
+  renderTool?: (item: FileInformation) => React.ReactNode
+  editFile?: FileInformation | null //正在编辑的文件
+  closeEdit?: () => void
+}
+
+export interface FileListProps extends FileListBaseProps {
   dataSource?: FileInformation[]
   justify?: RowProps['justify']
-  columns?: ColumnType[]
-  renderTool?: (
-    item: FileInformation,
-    setIsEdit: React.Dispatch<React.SetStateAction<boolean>>
-  ) => React.ReactNode
   onSelectedChange?: (selected: FileInformation[]) => void
   contextMenu?: MenuProps['items'] //右键菜单
   loading?: boolean
@@ -28,10 +30,12 @@ export interface ColumnType {
 const FileList: React.FC<FileListProps> = (props) => {
   const { styles } = useStyles()
   const {
-    dataSource,
     columns,
     justify,
+    dataSource,
     renderTool,
+    editFile,
+    closeEdit,
     contextMenu,
     onSelectedChange
   } = props
@@ -99,6 +103,8 @@ const FileList: React.FC<FileListProps> = (props) => {
                     key={item.id}
                     file={item}
                     renderTool={renderTool}
+                    editFile={editFile}
+                    closeEdit={closeEdit}
                     columns={columns}
                     isSelected={isSelected(item)}
                     toggleSelected={() => toggle(item)}

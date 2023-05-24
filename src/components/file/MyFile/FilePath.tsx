@@ -12,7 +12,7 @@ export default FilePath
 const useStyles = createStyles(({ token, css }) => {
   return {
     container: css`
-      padding: 0 24px;
+      padding: 12px 24px;
     `
   }
 })

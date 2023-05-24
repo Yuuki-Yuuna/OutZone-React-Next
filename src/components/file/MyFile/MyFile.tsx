@@ -14,8 +14,6 @@ const MyFile: React.FC = () => {
   const { styles } = useStyles()
   const { userInfo, fileList, pathId, loading } = useMyFileData()
 
-  const [selectedFiles, setSelectedFiles] = useState<FileInformation[]>([]) //被选中的所有文件
-
   const tempData: FileInformation[] = [
     {
       id: '1',
@@ -68,6 +66,8 @@ const MyFile: React.FC = () => {
   ]
   const [testData] = useState(tempData)
 
+  const [editFile, setEditFile] = useState<FileInformation | null>(null) //正在编辑的文件
+  const [selectedFiles, setSelectedFiles] = useState<FileInformation[]>([]) //被选中的所有文件
   const contextMenu = useFileContextMenu(selectedFiles)
 
   return (
@@ -79,9 +79,11 @@ const MyFile: React.FC = () => {
             <FilePath />
             <FileList
               columns={columns}
-              renderTool={(item, setIsEdit) => (
-                <FileTool file={item} setIsEdit={setIsEdit} />
+              renderTool={(item) => (
+                <FileTool file={item} setEditFile={setEditFile} />
               )}
+              editFile={editFile}
+              closeEdit={() => setEditFile(null)}
               contextMenu={contextMenu}
               dataSource={testData}
               loading={loading}
