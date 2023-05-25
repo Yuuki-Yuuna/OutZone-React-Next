@@ -7,6 +7,8 @@ import { useUserInfo } from '~/hooks'
 import { fileApi } from '~/api'
 import { OwnerType } from '~/type'
 
+const minInterval = 500 // 最小间隔
+
 export const useMyFileData = () => {
   const { message } = App.useApp()
   const [search] = useSearchParams()
@@ -40,8 +42,11 @@ export const useMyFileData = () => {
     clearTimeout(timeoutRef.current)
     if (!loading) {
       const dt = Date.now() - timestampRef.current
-      if (dt < 500) {
-        timeoutRef.current = setTimeout(() => setMinLoading(false), 500 - dt)
+      if (dt < minInterval) {
+        timeoutRef.current = setTimeout(
+          () => setMinLoading(false),
+          minInterval - dt
+        )
       } else {
         setMinLoading(false)
       }
