@@ -1,10 +1,11 @@
-import React, { Suspense, createContext } from 'react'
+import React, { Suspense } from 'react'
 import { RouterProvider } from 'react-router-dom'
 import { useToggle } from 'ahooks'
 import { ThemeProvider, createGlobalStyle } from 'antd-style'
 import { App as AntdApp, ConfigProvider } from 'antd'
 import zhCN from 'antd/locale/zh_CN'
 import router from './router'
+import { ThemeChangeContext } from './contexts'
 import { Appearance } from '~/type'
 
 const App: React.FC = () => {
@@ -28,15 +29,6 @@ const App: React.FC = () => {
     </ConfigProvider>
   )
 }
-
-export interface ThemeChangeContextType {
-  appearance: Appearance
-  changeAppearance: () => void
-}
-export const ThemeChangeContext = createContext<ThemeChangeContextType>({
-  appearance: 'light',
-  changeAppearance: () => {}
-})
 
 export default App
 

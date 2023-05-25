@@ -3,13 +3,17 @@ import { createStyles } from 'antd-style'
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 import { Image } from 'antd'
 import FolderDetail from './FolderDetail'
-import { MyFileContext } from './MyFile'
-import { ContentType } from '~/type'
 import { computedFileSize } from '~/util'
+import { ContentType, FileInformation } from '~/type'
 
-const FilePreview: React.FC = () => {
+
+export interface FilePreviewProps {
+  selectedFiles: FileInformation[]
+}
+
+const FilePreview: React.FC<FilePreviewProps> = (props) => {
   const { styles, cx } = useStyles()
-  const { selectedFiles = [] } = useContext(MyFileContext)
+  const { selectedFiles } = props
   const [isFold, setIsfold] = useState(false) //折叠
 
   const FileDetail: React.FC = () => {

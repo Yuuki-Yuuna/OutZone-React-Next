@@ -1,3 +1,5 @@
+import { useRef, useState } from 'react'
+import { useUpdateEffect } from 'ahooks'
 import { useSearchParams } from 'react-router-dom'
 import { useRequest } from 'ahooks'
 import { App } from 'antd'
@@ -8,33 +10,48 @@ import { OwnerType } from '~/type'
 export const useMyFileData = () => {
   const { message } = App.useApp()
   const [search] = useSearchParams()
+  const path = search.get('path') || '/'
 
   const { data: userInfo, loading: userInfoLoading } = useUserInfo()
-  const pathId =
-    search.get('path') || userInfo?.additionalInformation.rootDirectory.id
   const { data: fileList, loading: fileListLoading } = useRequest(
     async () => {
-      if (userInfo && pathId) {
-        return fileApi.getNowFileList({
-          nowDirectoryId: pathId,
+      if (userInfo) {
+        return fileApi.getFileListByPath({
           ownerId: userInfo.uId,
           ownerType: OwnerType.user,
-          pageIndex: 0
+          pageIndex: 0,
+          path
         })
       }
     },
     {
-      refreshDeps: [userInfo, pathId],
+      refreshDeps: [userInfo, path],
       onError(err) {
         message.error(err.message)
       }
     }
   )
 
+  const timestampRef = useRef(Date.now()) //检测加载间隔，只检测了fileList
+  const timeoutRef = useRef<NodeJS.Timeout>()
+  const loading = userInfoLoading || fileListLoading
+  const [minLoading, setMinLoading] = useState(loading) //加载时间最低500ms
+  useUpdateEffect(() => {
+    clearTimeout(timeoutRef.current)
+    if (!loading) {
+      const dt = Date.now() - timestampRef.current
+      if (dt < 500) {
+        timeoutRef.current = setTimeout(() => setMinLoading(false), 500 - dt)
+      } else {
+        setMinLoading(false)
+      }
+    }
+    timestampRef.current = Date.now()
+  }, [loading])
+
   return {
     userInfo,
     fileList,
-    pathId,
-    loading: userInfoLoading || fileListLoading
+    loading: minLoading
   }
 }

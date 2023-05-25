@@ -1,20 +1,20 @@
-import React, { createContext, useState } from 'react'
+import React, { useState } from 'react'
 import { createStyles } from 'antd-style'
+import { LoadingOutlined } from '@ant-design/icons'
+import { Spin } from 'antd'
 import FileOption from './FileOption'
 import FilePath from './FilePath'
 import FileTool from './FileTool'
 import FilePreview from './FilePreview'
-import FileList, { ColumnType } from '~/components/file/FileList/FileList'
+import FileList, { FileListProps } from '~/components/file/FileList/FileList'
 import { useMyFileData } from './hooks/useMyFileData'
 import { useFileContextMenu } from './hooks/useFileContextMenu'
-import { UserInfo, FileInformation } from '~/type'
 import { computedFileSize } from '~/util'
-import { Spin } from 'antd'
-import { LoadingOutlined } from '@ant-design/icons'
+import { FileInformation } from '~/type'
 
 const MyFile: React.FC = () => {
   const { styles } = useStyles()
-  const { userInfo, fileList, pathId, loading } = useMyFileData()
+  const { fileList, loading: dataLoading } = useMyFileData()
 
   const tempData: FileInformation[] = [
     {
@@ -52,7 +52,7 @@ const MyFile: React.FC = () => {
     }
   ]
   // console.log(tempData)
-  const columns: ColumnType[] = [
+  const columns: NonNullable<FileListProps['columns']> = [
     {
       title: '修改时间',
       dataIndex: 'updateDate',
@@ -74,47 +74,38 @@ const MyFile: React.FC = () => {
   const contextMenu = useFileContextMenu(selectedFiles)
 
   return (
-    <MyFileContext.Provider value={{ selectedFiles, pathId, userInfo }}>
+    <div className={styles.container}>
       <Spin
         wrapperClassName={styles.spin}
         spinning={false}
         indicator={<LoadingOutlined />}
         size='large'
       >
-        <div className={styles.container}>
-          <FileOption {...{ setEditFile, setEditNewFolder }} />
-          <div className={styles.fileManage}>
-            <div className={styles.myFile}>
-              <FilePath />
-              <FileList
-                columns={columns}
-                renderTool={(item) => (
-                  <FileTool file={item} setEditFile={setEditFile} />
-                )}
-                editFile={editFile}
-                closeEdit={() => setEditFile(null)}
-                editNewFolder={editNewFolder}
-                closeEditNewFolder={() => setEditNewFolder(false)}
-                contextMenu={contextMenu}
-                dataSource={testData}
-                loading={loading}
-                onSelectedChange={(selected) => setSelectedFiles(selected)}
-              />
-            </div>
-            <FilePreview />
+        <FileOption {...{ selectedFiles, setEditFile, setEditNewFolder }} />
+        <div className={styles.fileManage}>
+          <div className={styles.myFile}>
+            <FilePath />
+            <FileList
+              dataSource={fileList}
+              loading={dataLoading}
+              columns={columns}
+              renderTool={(item) => (
+                <FileTool file={item} setEditFile={setEditFile} />
+              )}
+              contextMenu={contextMenu}
+              editFile={editFile}
+              closeEdit={() => setEditFile(null)}
+              editNewFolder={editNewFolder}
+              closeEditNewFolder={() => setEditNewFolder(false)}
+              onSelectedChange={(selected) => setSelectedFiles(selected)}
+            />
           </div>
+          <FilePreview selectedFiles={selectedFiles} />
         </div>
       </Spin>
-    </MyFileContext.Provider>
+    </div>
   )
 }
-
-export interface MyFileContextType {
-  selectedFiles?: FileInformation[]
-  userInfo?: UserInfo
-  pathId?: string
-}
-export const MyFileContext = createContext<MyFileContextType>({})
 
 export default MyFile
 

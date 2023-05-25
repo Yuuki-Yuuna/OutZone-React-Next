@@ -3,7 +3,7 @@ import { createStyles } from 'antd-style'
 import { Layout, Image, Divider, Switch } from 'antd'
 import IconFont from '~/components/icon/IconFont'
 import UserNav from './UserNav'
-import { ThemeChangeContext } from '~/App'
+import { ThemeChangeContext } from '~/contexts'
 
 const NavBar: React.FC = () => {
   const { styles } = useStyles()

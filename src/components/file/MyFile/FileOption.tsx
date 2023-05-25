@@ -1,19 +1,18 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import { createStyles } from 'antd-style'
 import { Button, Space } from 'antd'
 import FileUpload from './FileUpload'
-import { MyFileContext } from './MyFile'
 import { FileInformation } from '~/type'
 
 export interface FileOptionProps {
+  selectedFiles: FileInformation[]
   setEditFile: React.Dispatch<React.SetStateAction<FileInformation | null>>
   setEditNewFolder: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const FileOption: React.FC<FileOptionProps> = (props) => {
   const { styles } = useStyles()
-  const { setEditFile, setEditNewFolder } = props
-  const { selectedFiles } = useContext(MyFileContext)
+  const { selectedFiles, setEditFile, setEditNewFolder } = props
 
   return (
     <div className={styles.container}>

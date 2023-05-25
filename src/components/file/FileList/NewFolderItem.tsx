@@ -1,17 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { createStyles } from 'antd-style'
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons'
 import { Button, Row, Col, Image, Space, Input, InputRef } from 'antd'
-
-export interface NewFolderItemProps {
-  editNewFolder?: boolean //是否正在新建文件夹
-  closeEditNewFolder?: () => void
-}
+import { FileListContext } from './context'
 
 // 新建文件夹需要单独的逻辑
-const NewFolderItem: React.FC<NewFolderItemProps> = (props) => {
+const NewFolderItem: React.FC = () => {
   const { styles, theme } = useStyles()
-  const { editNewFolder, closeEditNewFolder } = props
+  const { editNewFolder, closeEditNewFolder } = useContext(FileListContext)
 
   const inputRef = useRef<InputRef>(null)
   const [editName, setEditName] = useState('')

@@ -2,13 +2,13 @@ import React, { useContext, useEffect, useRef } from 'react'
 import { observer } from 'mobx-react-lite'
 import { UploadOutlined } from '@ant-design/icons'
 import { App, Button } from 'antd'
-import { MyFileContext } from './MyFile'
 import { useRootStore } from '~/store'
+import { useUserInfo } from '~/hooks'
 import { OwnerType, UploadFile } from '~/type'
 
 const FileUpload: React.FC = observer(() => {
   const { message } = App.useApp()
-  const { pathId, userInfo } = useContext(MyFileContext)
+  const { data: userInfo } = useUserInfo()
 
   const uploadRef = useRef<HTMLElement>(null)
   const { uploader } = useRootStore()
@@ -20,7 +20,7 @@ const FileUpload: React.FC = observer(() => {
     }
     const extra = {
       // 没有时获取根文件夹
-      destinationPath: pathId,
+      destinationPath: '/',
       ownerType: OwnerType.user,
       ownerId: userInfo.uId
     }

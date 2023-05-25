@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import { createStyles } from 'antd-style'
 import IconFont from '~/components/icon/IconFont'
-import { ThemeChangeContext } from '~/App'
+import { ThemeChangeContext } from '~/contexts'
 
 export interface ThemeSwitchProps {
   className: string

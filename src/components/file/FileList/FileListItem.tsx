@@ -1,44 +1,24 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { useHover } from 'ahooks'
 import { createStyles } from 'antd-style'
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons'
-import {
-  Row,
-  Button,
-  Col,
-  Checkbox,
-  Image,
-  Space,
-  Input,
-  InputRef,
-  Skeleton
-} from 'antd'
-import { FileListBaseProps } from './FileList'
+import { Row, Button, Col, Checkbox, Image, Space, Input, InputRef } from 'antd'
 import { ContentType, FileInformation } from '~/type'
+import { FileListContext } from './context'
 
-export interface FileListItemProps extends FileListBaseProps {
+export interface FileListItemProps {
   file: FileInformation
   isSelected: boolean
   toggleSelected: () => void
   unSelectAll: () => void
-  hasContextMenu?: boolean //是否具有菜单，影响右键事件
-  loading?: boolean
 }
 
 const FileListItem: React.FC<FileListItemProps> = (props) => {
   const { styles, cx, theme } = useStyles()
-  const {
-    file,
-    columns,
-    renderTool,
-    editFile,
-    closeEdit,
-    isSelected,
-    toggleSelected,
-    unSelectAll,
-    hasContextMenu,
-    loading
-  } = props
+  const { file, isSelected, toggleSelected, unSelectAll } = props
+  const { columns, renderTool, contextMenu, editFile, closeEdit } =
+    useContext(FileListContext)
+
   const filename =
     file.contentType === ContentType.directory
       ? file.name.slice(1, -1)
@@ -53,9 +33,6 @@ const FileListItem: React.FC<FileListItemProps> = (props) => {
 
   const selectTimeout = useRef<NodeJS.Timeout>()
   const onClick = () => {
-    if (loading) {
-      return
-    }
     // 由于doubleClick，可以做防抖优化
     if (selectTimeout.current) {
       clearTimeout(selectTimeout.current)
@@ -72,13 +49,8 @@ const FileListItem: React.FC<FileListItemProps> = (props) => {
     toggleSelected()
   }
 
-  const onContextMenu = (event: React.MouseEvent) => {
-    if (loading) {
-      event.preventDefault()
-      event.stopPropagation()
-      return
-    }
-    if (!hasContextMenu || isSelected) {
+  const onContextMenu = () => {
+    if (!contextMenu || isSelected) {
       // 选中也不做操作
       return
     }
@@ -95,10 +67,8 @@ const FileListItem: React.FC<FileListItemProps> = (props) => {
       editRef.current?.focus()
       const slices = filename.split('.')
       if (slices.length > 1) {
-        editRef.current?.setSelectionRange(
-          0,
-          filename.length - slices.at(-1)!.length - 1
-        ) //算个点的位置
+        const end = filename.length - slices.at(-1)!.length - 1 //还要算个点的位置
+        editRef.current?.setSelectionRange(0, end)
       } else {
         editRef.current?.setSelectionRange(0, filename.length)
       }
@@ -119,76 +89,57 @@ const FileListItem: React.FC<FileListItemProps> = (props) => {
   return (
     <Row
       ref={containerRef}
-      className={cx(
-        styles.container,
-        isSelected && 'selected',
-        loading && 'loading'
-      )}
+      className={cx(styles.container, isSelected && 'selected')}
       align='middle'
       onClick={onClick}
       onDoubleClick={onDoubleClick}
       onContextMenu={onContextMenu}
     >
       <Col span={1} style={{ textAlign: 'center' }}>
-        {!loading && (
-          <Checkbox checked={isSelected} onClick={onCheckBoxClick} />
-        )}
+        <Checkbox checked={isSelected} onClick={onCheckBoxClick} />
       </Col>
-      <Col className={cx(styles.fileInfo, loading && 'loading')} span={11}>
-        {loading ? (
-          <Space>
-            <Skeleton.Avatar
-              className={styles.sekeletonImage}
-              shape='square'
-              active
+      <Col className={styles.fileInfo} span={11}>
+        <Image
+          src={file.icon}
+          preview={false}
+          width={32}
+          height={32}
+          style={{ borderRadius: theme.borderRadius, objectFit: 'cover' }}
+        />
+        {isEdit ? (
+          <Space onClick={(event) => event.stopPropagation()}>
+            <Input
+              ref={editRef}
+              size='small'
+              value={editName}
+              onChange={onEditChange}
+              maxLength={50}
             />
-            <Skeleton.Input className={styles.sekeletonText} active />
+            <Button
+              size='small'
+              type='primary'
+              icon={<CheckOutlined />}
+              onClick={onEditDone}
+            />
+            <Button
+              size='small'
+              type='primary'
+              icon={<CloseOutlined />}
+              onClick={closeEdit}
+            />
           </Space>
         ) : (
           <>
-            <Image
-              src={file.icon}
-              preview={false}
-              width={32}
-              height={32}
-              style={{ borderRadius: theme.borderRadius, objectFit: 'cover' }}
-            />
-            {isEdit ? (
-              <Space onClick={(event) => event.stopPropagation()}>
-                <Input
-                  ref={editRef}
-                  size='small'
-                  value={editName}
-                  onChange={onEditChange}
-                  maxLength={50}
-                />
-                <Button
-                  size='small'
-                  type='primary'
-                  icon={<CheckOutlined />}
-                  onClick={onEditDone}
-                />
-                <Button
-                  size='small'
-                  type='primary'
-                  icon={<CloseOutlined />}
-                  onClick={() => closeEdit?.()}
-                />
-              </Space>
-            ) : (
-              <>
-                <span
-                  className={cx(
-                    styles.text,
-                    styles.filename,
-                    isHover && styles.filenameHover
-                  )}
-                >
-                  {filename}
-                </span>
-                {isHover && renderTool?.(file)}
-              </>
-            )}
+            <span
+              className={cx(
+                styles.text,
+                styles.filename,
+                isHover && styles.hoverFilename
+              )}
+            >
+              {filename}
+            </span>
+            {isHover && renderTool?.(file)}
           </>
         )}
       </Col>
@@ -196,20 +147,8 @@ const FileListItem: React.FC<FileListItemProps> = (props) => {
         const { dataIndex, render, span } = column
         const value = file[dataIndex]
         return (
-          <Col
-            className={styles.text}
-            span={span}
-            key={dataIndex}
-            style={{ display: !loading && isHover ? 'none' : 'unset' }}
-          >
-            {loading ? (
-              <Skeleton.Input
-                className={cx(styles.sekeletonText, 'short')}
-                active
-              />
-            ) : (
-              render?.(value, file) ?? value
-            )}
+          <Col key={dataIndex} className={styles.text} span={span}>
+            {render?.(value, file) ?? value}
           </Col>
         )
       })}
@@ -225,10 +164,11 @@ const useStyles = createStyles(({ token, css }) => {
       height: 50px;
       padding: 0 12px;
 
-      &:not(.loading):hover {
+      &:hover {
         background: ${token.colorBgTextHover};
       }
-      &:not(.loading).selected {
+
+      &.selected {
         background: ${token.colorPrimaryBg};
       }
     `,
@@ -243,10 +183,6 @@ const useStyles = createStyles(({ token, css }) => {
       display: flex;
       align-items: center;
       gap: 12px;
-
-      &.loading {
-        cursor: default;
-      }
     `,
     filename: css`
       max-width: calc(100% - 144px);
@@ -255,32 +191,8 @@ const useStyles = createStyles(({ token, css }) => {
         color: ${token.colorPrimaryTextHover};
       }
     `,
-    filenameHover: css`
+    hoverFilename: css`
       max-width: calc(100% - 180px);
-    `,
-    sekeletonImage: css`
-      cursor: default;
-
-      &.ant-skeleton.ant-skeleton-element .ant-skeleton-avatar {
-        width: 28px;
-        height: 28px;
-        border-radius: ${token.borderRadius}px;
-      }
-    `,
-    sekeletonText: css`
-      display: flex !important;
-      align-items: center;
-      cursor: default;
-
-      &.ant-skeleton.ant-skeleton-element .ant-skeleton-input {
-        width: 180px;
-        height: 16px;
-        min-width: unset;
-
-        &.short {
-          width: 48px;
-        }
-      }
     `
   }
 })
