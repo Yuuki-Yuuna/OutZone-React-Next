@@ -1,26 +1,29 @@
-import React, { useContext, useEffect, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { observer } from 'mobx-react-lite'
 import { UploadOutlined } from '@ant-design/icons'
 import { App, Button } from 'antd'
 import { useRootStore } from '~/store'
-import { useUserInfo } from '~/hooks'
+import { usePathId } from '~/hooks'
 import { OwnerType, UploadFile } from '~/type'
 
 const FileUpload: React.FC = observer(() => {
   const { message } = App.useApp()
-  const { data: userInfo } = useUserInfo()
+  const [search] = useSearchParams()
+  const path = search.get('path') || '/'
+  const uploadPath = path == '/' ? path : path + '/'
+  const { userInfo, pathId } = usePathId(uploadPath, OwnerType.user)
 
   const uploadRef = useRef<HTMLElement>(null)
   const { uploader } = useRootStore()
   uploader.onFileReady = (uploadFile) => {
-    if (!userInfo) {
+    if (!userInfo || !pathId) {
       message.error('获取用户信息失败')
       uploader.removeFile(uploadFile)
       return
     }
     const extra = {
-      // 没有时获取根文件夹
-      destinationPath: '/',
+      destinationPath: pathId,
       ownerType: OwnerType.user,
       ownerId: userInfo.uId
     }

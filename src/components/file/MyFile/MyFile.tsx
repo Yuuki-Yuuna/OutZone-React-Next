@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { createStyles } from 'antd-style'
 import { LoadingOutlined } from '@ant-design/icons'
 import { Spin } from 'antd'
@@ -7,57 +7,23 @@ import FilePath from './FilePath'
 import FileTool from './FileTool'
 import FilePreview from './FilePreview'
 import FileList, { FileListProps } from '~/components/file/FileList/FileList'
-import { useMyFileData } from './hooks/useMyFileData'
 import { useFileContextMenu } from './hooks/useFileContextMenu'
+import { useMyFileData } from './hooks/useMyFileData'
 import { computedFileSize } from '~/util'
 import { FileInformation } from '~/type'
 
 const MyFile: React.FC = () => {
   const { styles } = useStyles()
-  const { fileList, loading: dataLoading } = useMyFileData()
 
-  const tempData: FileInformation[] = [
-    {
-      id: '1',
-      name: '/test215141514215151241315134151avagasgaagavdfjg/',
-      size: 0,
-      absolutePath: '/',
-      parentDirectoryId: '-1',
-      contentType: 0,
-      icon: '/icon/folder.png',
-      createDate: '-',
-      updateDate: '2023-05-01T14:36:11'
-    },
-    {
-      id: '2',
-      name: '/test215141514215151241315134151avagasgaagavdfjg/',
-      size: 0,
-      absolutePath: '/',
-      parentDirectoryId: '-1',
-      contentType: 0,
-      icon: '/icon/folder.png',
-      createDate: '2023-05-01T18:30:11',
-      updateDate: '2023-05-01T14:36:11'
-    },
-    {
-      id: '3',
-      name: 'zipFile.rar',
-      size: 1024 * 1024 * 10,
-      absolutePath: '/',
-      parentDirectoryId: '-1',
-      contentType: 1,
-      icon: '/icon/zip.png',
-      createDate: '2023-05-01T14:36:11',
-      updateDate: '2023-05-01T18:30:11'
-    }
-  ]
-  // console.log(tempData)
+  const listRef = useRef<HTMLDivElement>(null)
+  const { fileList, loading: dataLoading } = useMyFileData(listRef)
+
   const columns: NonNullable<FileListProps['columns']> = [
     {
       title: '修改时间',
       dataIndex: 'updateDate',
       span: 6,
-      render: (text) => new Date(text).toLocaleString()
+      render: (text) => new Date(text as string).toLocaleString()
     },
     {
       title: '大小',
@@ -66,7 +32,6 @@ const MyFile: React.FC = () => {
       render: (text) => computedFileSize(text as number)
     }
   ]
-  const [testData] = useState(tempData)
 
   const [editNewFolder, setEditNewFolder] = useState(false)
   const [editFile, setEditFile] = useState<FileInformation | null>(null) //正在编辑的文件
@@ -86,6 +51,10 @@ const MyFile: React.FC = () => {
           <div className={styles.myFile}>
             <FilePath />
             <FileList
+              ref={listRef}
+              height={`calc(100vh - ${
+                listRef.current?.getBoundingClientRect().top
+              }px)`}
               dataSource={fileList}
               loading={dataLoading}
               columns={columns}

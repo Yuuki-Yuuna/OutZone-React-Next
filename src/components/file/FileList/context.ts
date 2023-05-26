@@ -6,7 +6,10 @@ export interface ColumnType {
   title: string
   dataIndex: keyof FileInformation
   span: number //0到12格栅布局
-  render?: (text: string | number, record: FileInformation) => React.ReactNode
+  render?: (
+    text: string | number | null,
+    record: FileInformation
+  ) => React.ReactNode
 }
 
 export interface FileListContextType {

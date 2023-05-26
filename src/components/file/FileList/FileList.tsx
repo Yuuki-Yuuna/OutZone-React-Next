@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { forwardRef, useEffect } from 'react'
 import { useSelections, useUpdateEffect } from 'ahooks'
 import { createStyles } from 'antd-style'
 import { Row, Col, Checkbox, Dropdown, Skeleton } from 'antd'
@@ -11,21 +11,21 @@ import { FileInformation } from '~/type'
 export interface FileListProps extends FileListContextType {
   dataSource?: FileInformation[]
   loading?: boolean
+  height?: string
   onSelectedChange?: (selected: FileInformation[]) => void
 }
 
-const FileList: React.FC<FileListProps> = (props) => {
+const FileList = forwardRef<HTMLDivElement, FileListProps>((props, ref) => {
   const { styles } = useStyles()
   const {
     columns,
     dataSource,
     loading,
+    height,
     contextMenu,
     editNewFolder,
     onSelectedChange
   } = props
-
-  const listRef = useRef<HTMLDivElement>(null)
 
   const {
     selected,
@@ -77,15 +77,7 @@ const FileList: React.FC<FileListProps> = (props) => {
                 </Col>
               ))}
             </Row>
-            <div
-              ref={listRef}
-              className={styles.list}
-              style={{
-                height: `calc(100vh - ${
-                  listRef.current?.getBoundingClientRect().top
-                }px)`
-              }}
-            >
+            <div ref={ref} className={styles.list} style={{ height }}>
               {loading ? (
                 Array.from(new Array(10).keys()).map((item) => (
                   <SekeletonItem key={item} />
@@ -121,7 +113,7 @@ const FileList: React.FC<FileListProps> = (props) => {
       </div>
     </FileListContext.Provider>
   )
-}
+})
 
 export default FileList
 
