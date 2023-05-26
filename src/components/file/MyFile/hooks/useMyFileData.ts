@@ -1,12 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { useInfiniteScroll, useUpdateEffect } from 'ahooks'
+import { useInfiniteScroll } from 'ahooks'
 import { App } from 'antd'
-import { useUserInfo } from '~/hooks'
+import { useDelayLoadingDone, useUserInfo } from '~/hooks'
 import { fileApi } from '~/api'
 import { OwnerType } from '~/type'
-
-const minInterval = 500 // 最小间隔
 
 export const useMyFileData = (listRef: React.RefObject<HTMLDivElement>) => {
   const { message } = App.useApp()
@@ -53,29 +51,12 @@ export const useMyFileData = (listRef: React.RefObject<HTMLDivElement>) => {
       reload()
     }
   }, [userInfo, reload])
-  const timestampRef = useRef(Date.now()) //检测加载间隔，只检测了fileList
-  const timeoutRef = useRef<NodeJS.Timeout>()
   const loading = userInfoLoading || firstLoading || loadingMore
-  const [minLoading, setMinLoading] = useState(loading) //加载时间最低500ms
-  useUpdateEffect(() => {
-    clearTimeout(timeoutRef.current)
-    if (!loading) {
-      const dt = Date.now() - timestampRef.current
-      if (dt < minInterval) {
-        timeoutRef.current = setTimeout(
-          () => setMinLoading(false),
-          minInterval - dt
-        )
-      } else {
-        setMinLoading(false)
-      }
-    }
-    timestampRef.current = Date.now()
-  }, [loading])
+  const delayLoading = useDelayLoadingDone(loading)
 
   return {
     userInfo,
     fileList: fileListRes?.list,
-    loading: minLoading
+    loading: delayLoading
   }
 }

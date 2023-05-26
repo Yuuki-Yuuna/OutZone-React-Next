@@ -6,7 +6,6 @@ import FolderDetail from './FolderDetail'
 import { computedFileSize } from '~/util'
 import { ContentType, FileInformation } from '~/type'
 
-
 export interface FilePreviewProps {
   selectedFiles: FileInformation[]
 }

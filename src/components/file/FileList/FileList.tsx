@@ -63,6 +63,8 @@ const FileList = forwardRef<HTMLDivElement, FileListProps>((props, ref) => {
               <Col span={11}>
                 {loading ? (
                   <Skeleton.Input className={styles.sekeletonText} active />
+                ) : selected.length ? (
+                  `已选中${selected.length}个文件/文件夹`
                 ) : (
                   '文件名'
                 )}

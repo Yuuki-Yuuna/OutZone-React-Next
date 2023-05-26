@@ -1,11 +1,14 @@
 import React, { useState } from 'react'
 import { createStyles } from 'antd-style'
 import { Image, List, Skeleton } from 'antd'
+import { useFilePreviewData } from './hooks/useFilePreviewData'
 import { ContentType, FileInformation } from '~/type'
 
 export interface FolderDetailProps {
   file: FileInformation
 }
+
+const maxPreview = 20
 
 const FolderDetail: React.FC<FolderDetailProps> = (props) => {
   const { styles, theme } = useStyles()
@@ -15,31 +18,11 @@ const FolderDetail: React.FC<FolderDetailProps> = (props) => {
       ? file.name.slice(1, -1)
       : file.name
 
-  const [tempLoading, setTempLoading] = useState(false)
-  const [tempPreviewList] = useState<FileInformation[]>([
-    {
-      id: '1',
-      name: 'okdasfagagagqawqfabagagasdasahtdjygf',
-      size: 1024,
-      absolutePath: '/',
-      parentDirectoryId: '-1',
-      contentType: 1,
-      icon: '/icon/image.png',
-      createDate: '-',
-      updateDate: '2023-05-01T14:36:11'
-    }
-  ])
+  const { previewList, loading } = useFilePreviewData(file.absolutePath)
 
   const folderPreviewItemRender = (item: FileInformation) => {
     return (
       <List.Item className={styles.listItem}>
-        {/* <Skeleton.Avatar
-          active
-          size='small'
-          shape='square'
-          style={{ borderRadius: theme.borderRadius }}
-        />
-        <Skeleton.Input className={styles.sekeleton} active /> */}
         <Image
           src={item.icon}
           preview={false}
@@ -51,6 +34,19 @@ const FolderDetail: React.FC<FolderDetailProps> = (props) => {
       </List.Item>
     )
   }
+  const folderSekeletonItemRender = (item: number) => {
+    return (
+      <List.Item className={styles.listItem}>
+        <Skeleton.Avatar
+          active
+          size='small'
+          shape='square'
+          style={{ borderRadius: theme.borderRadius }}
+        />
+        <Skeleton.Input className={styles.sekeleton} active />
+      </List.Item>
+    )
+  }
 
   return (
     <div className={styles.container}>
@@ -58,12 +54,28 @@ const FolderDetail: React.FC<FolderDetailProps> = (props) => {
         <Image src={file.icon} preview={false} width={32} />
         <span className={styles.text}>{filename}</span>
       </div>
-      <List
-        style={{ height: 500, overflowY: 'auto' }}
-        dataSource={tempPreviewList}
-        renderItem={folderPreviewItemRender}
-      />
-      {/* 大于20个文件显示省略 */}
+      {loading ? (
+        <List
+          dataSource={Array.from(new Array(10).keys())}
+          renderItem={folderSekeletonItemRender}
+        />
+      ) : previewList?.length ? (
+        <List
+          footer={
+            previewList.length > maxPreview && (
+              <p className={styles.info}>更多文件请在文件夹内查看</p>
+            )
+          }
+          style={{ height: 520, overflowY: 'auto' }}
+          dataSource={previewList.slice(0, maxPreview)}
+          renderItem={folderPreviewItemRender}
+        />
+      ) : (
+        <div className={styles.empty}>
+          <Image src={'/emptyFolder.png'} width={60} preview={false} />
+          <p className={styles.info}>此文件夹为空</p>
+        </div>
+      )}
     </div>
   )
 }
@@ -86,6 +98,7 @@ const useStyles = createStyles(({ token, css }) => {
       &.ant-list-item {
         justify-content: flex-start;
         padding: 12px 6px;
+        border-block-end: none;
       }
 
       & > span {
@@ -109,6 +122,19 @@ const useStyles = createStyles(({ token, css }) => {
       &.ant-skeleton.ant-skeleton-element .ant-skeleton-input {
         height: 100%;
       }
+    `,
+    info: css`
+      margin: 0;
+      font-size: 12px;
+      text-align: center;
+      color: ${token.colorTextDescription};
+    `,
+    empty: css`
+      position: absolute;
+      top: 150px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
     `
   }
 })

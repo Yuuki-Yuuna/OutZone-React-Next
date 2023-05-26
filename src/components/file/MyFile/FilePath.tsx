@@ -1,8 +1,11 @@
 import React from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { createStyles } from 'antd-style'
 
 const FilePath: React.FC = () => {
   const { styles } = useStyles()
+  const [search] = useSearchParams()
+  const path = search.get('path') || '/'
 
   return <div className={styles.container}>占位</div>
 }
