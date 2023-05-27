@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
 import rootStore, { StoreContext } from './store'
+import App from './App.tsx'
 import 'antd/dist/reset.css'
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(

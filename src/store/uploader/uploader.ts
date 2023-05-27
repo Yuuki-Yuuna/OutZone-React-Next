@@ -69,10 +69,10 @@ export class Uploader implements UploaderListener {
   onFileFail?: (file: UploadFile, error: Error) => void
 
   constructor(option?: Partial<UploaderOption>) {
+    makeAutoObservable(this)
     this.option = { ...defaultOption, ...option }
     this._trigger = createTrigger(this)
     this._requestList = new RequestList(this)
-    makeAutoObservable(this)
   }
 
   register(element: HTMLElement) {

@@ -45,12 +45,12 @@ export class UploadFile {
   type: string
 
   constructor(file: File) {
+    makeAutoObservable(this)
     this.lastTimestamp = Date.now()
     this.file = file
     this.name = file.name
     this.size = file.size
     this.type = file.type
-    makeAutoObservable(this)
   }
 
   get isCompleted() {

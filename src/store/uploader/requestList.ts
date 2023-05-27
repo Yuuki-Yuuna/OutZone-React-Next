@@ -59,7 +59,7 @@ export class RequestList {
 
   //开始上传一个文件的方法
   uploadRequest = async (uploadFile: UploadFile, resume: boolean = false) => {
-    uploadFile.lastTimestamp = Date.now()
+    runInAction(() => (uploadFile.lastTimestamp = Date.now()))
     this.uploader.onFileStart?.(uploadFile)
     if (resume) {
       for (let current = 0; current < uploadFile.chunks.length; current++) {
